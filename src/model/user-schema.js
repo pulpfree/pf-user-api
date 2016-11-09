@@ -2,20 +2,25 @@ const Mongoose = require('mongoose')
 
 const bcrypt    = require('bcrypt')
 const SALT_FACTOR = 10
+const ContactSchema = require('./contact-schema')
 
 const UserSchema = Mongoose.Schema({
   active: {
-    default: false,
-    type: Boolean
+    default:  false,
+    type:     Boolean
+  },
+  contact: {
+    type:     Mongoose.Schema.Types.ObjectId,
+    ref:      'ContactSchema',
   },
   email: {
-    index: true,
-    type: String,
-    unique: true,
+    index:    true,
+    type:     String,
+    unique:   true,
   },
-  password: String,
-  scope: Array,
-  scopeBits: Number
+  password:   String,
+  scope:      Array,
+  scopeBits:  Number
 },{
   timestamps: true
 })

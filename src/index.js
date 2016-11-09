@@ -2,7 +2,7 @@ import hapi from 'hapi'
 
 import Mongoose from 'mongoose'
 
-import { apolloHapi, graphiqlHapi } from 'apollo-server'
+import { graphqlHapi, graphiqlHapi } from 'graphql-server-hapi'
 import { makeExecutableSchema } from 'graphql-tools'
 
 // import Schema from './schema'
@@ -12,8 +12,6 @@ const Resolvers = require('./resolvers')
 // import Connectors from './connectors'
 const Connectors = require('./connectors')
 
-// console.log('Connectors:', Connectors)
-
 const connectURI = 'mongodb://localhost/pf-user'
 Mongoose.Promise = global.Promise
 Mongoose.connect(connectURI, err => {
@@ -22,27 +20,34 @@ Mongoose.connect(connectURI, err => {
 })
 
 
+// const server = new hapi.Server({debug: {request: ['info', 'error']}})
 const server = new hapi.Server()
 const HOST = 'localhost'
-const PORT = 3000
+const PORT = 3003
 
 const executableSchema = makeExecutableSchema({
   typeDefs: Schema,
   resolvers: Resolvers,
-  // allowUndefinedInResolve: false,
+  resolverValidationOptions: {
+    // requireResolversForAllFields: false,
+    // requireResolversForArgs: false,
+    requireResolversForNonScalar: false,
+  },
+  // allowUndefinedInResolve: true,
   printErrors: true,
 })
 
 server.connection({
   host: HOST,
   port: PORT,
+  routes: {cors: true}
 })
 
 server.register({
-  register: apolloHapi,
+  register: graphqlHapi,
   options: {
     path: '/graphql',
-    apolloOptions: {
+    graphqlOptions: {
       schema: executableSchema,
       context: { constructor: Connectors }
     },
@@ -59,11 +64,9 @@ server.register({
   },
 }, function (err) {
   if (err) { throw err }
-    // console.error('Failed to load plugin:', err)
 
   if (!module.parent) {
     server.start(function () {
-      // console.log('Server running at:', server.info.uri)
     server.log('info', `Server running at ${server.info.uri}`)
   })
 }

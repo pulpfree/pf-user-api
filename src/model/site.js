@@ -4,7 +4,7 @@ const siteSchema = Mongoose.Schema({
   active: {
     default:  false,
     index:    true,
-    // required: true,
+    required: true,
     type:     Boolean,
   },
   credentialKeyPassword: {
@@ -38,6 +38,7 @@ const siteSchema = Mongoose.Schema({
     required: true,
     type:     String,
   },
+  roles: Array,
   signingMethod: {
     default: 'RSA',
     type:     String,

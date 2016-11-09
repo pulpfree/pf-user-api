@@ -12,9 +12,10 @@
   "author": "Ron Dyck <rond@webbtech.net> (http://webbtech.net/)",
   "license": "MIT",
   "dependencies": {
-    "apollo-server": "0.3.2",
+    "apollo-server": "0.3.3",
     "bcrypt": "0.8.7",
     "graphql": "0.7.2",
+    "graphql-server-hapi": "0.4.3",
     "graphql-tools": "0.7.2",
     "hapi": "15.1.1",
     "mongoose": "4.6.4",

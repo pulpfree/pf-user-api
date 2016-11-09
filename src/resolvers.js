@@ -1,53 +1,68 @@
 const resolveFunctions = {
   RootQuery: {
-    fetchSites(_, {...params}, ctx) {
+    fetchSites(_, { ...params }, ctx) {
       const site = new ctx.constructor.Site()
       return site.find(params)
     },
-    fetchSiteById(_, _id, ctx) {
+    fetchSiteById(_, { _id }, ctx) {
+      if (!_id) return {}
       const site = new ctx.constructor.Site()
       return site.findSiteById(_id)
     },
-    fetchUser(_, {domainID, email}, ctx) {
+    fetchUser(_, { domainID, email }, ctx) {
       const site = new ctx.constructor.Site()
       const user = new ctx.constructor.User()
       return site.findSiteById(domainID).then(doc => {
         return user.fetchUserByEmail({email, doc})
       })
     },
-    fetchUsers(_, {domainID, email}, ctx) {
+    fetchUsers(_, { domainID, email }, ctx) {
+      if (!domainID) return []
       const site = new ctx.constructor.Site()
       const user = new ctx.constructor.User()
       return site.findSiteById(domainID).then(doc => {
         return user.fetchUsersByDomain({doc})
       })
-    }
+    },
   },
   RootMutation: {
-    createSite(_, { ...siteArgs }, ctx) {
-      console.log('siteArgs:', siteArgs)
+    createSite(_, { input }, ctx) {
       const site = new ctx.constructor.Site()
-      return site.create(siteArgs)
+      return site.create(input)
     },
-    updateSite(root, { _id, ...siteArgs }, ctx) {
+    updateSite(_, { _id, input }, ctx) {
       const site = new ctx.constructor.Site()
-      return site.update(_id, siteArgs)
+      return site.update(_id, input)
     },
-    createUser(_, {active, email, domainID, password, scope}, ctx) {
+    removeSite(_, { _id }, ctx) {
       const site = new ctx.constructor.Site()
-      const user = new ctx.constructor.User()
-      const userFields = {active, email, password, scope}
-      return site.findSiteById(domainID).then(doc => {
-        return user.create({doc, user: userFields})
+      let ret = site.remove(_id)
+      return ret.then(res => {
+        return res.result
       })
     },
-    updateUser(_, { domainID, userID, ...userArgs}, ctx) {
+    createUser(_, { input }, ctx) {
       const site = new ctx.constructor.Site()
       const user = new ctx.constructor.User()
-      return site.findSiteById(domainID).then(doc => {
-        return user.update({doc, userID, user: userArgs})
+      // input.scope = input.scope.split(',')
+      return site.findSiteById(input.domainID).then(site => {
+        return user.create({site, user: input})
       })
-    }
+    },
+    updateUser(_, { input }, ctx) {
+      const site = new ctx.constructor.Site()
+      const user = new ctx.constructor.User()
+      return site.findSiteById(input.domainID).then(site => {
+        return user.update({site, user: input})
+      })
+    },
+    removeUser(_, { _id, domainID }, ctx) {
+      const usr = new ctx.constructor.User()
+      let ret = usr.remove(_id, domainID)
+      return ret.then(res => {
+        return res.result
+      })
+    },
   },
 
 }
