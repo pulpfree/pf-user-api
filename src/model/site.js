@@ -7,23 +7,31 @@ const siteSchema = Mongoose.Schema({
     required: true,
     type:     Boolean,
   },
-  credentialKeyPassword: {
+  credentials: {
+    password: {
+      required: true,
+      type:     String,
+    },
+    username: {
+      required: true,
+    type:     String,
+    }
+  },
+  collections: {
+    contact: {
+      required: true,
+      type:     String,
+    },
+    user: {
+      required: true,
+      type:     String,
+    }
+  },
+  dbNm: {
     required: true,
     type:     String,
   },
-  credentialKeyUsername: {
-    required: true,
-    type:     String,
-  },
-  collectionNm: {
-    required: true,
-    type:     String,
-  },
-  dbNm:         {
-    required: true,
-    type:     String,
-  },
-  domain:       {
+  domainID: {
     required: true,
     type:     String,
     unique:   true,
@@ -32,8 +40,10 @@ const siteSchema = Mongoose.Schema({
     required: true,
     type:     String,
   },
-  pemFilePrivate: String,
-  pemFilePublic: String,
+  pemFiles: {
+    private: String,
+    public: String,
+  },
   resetURI: {
     required: true,
     type:     String,

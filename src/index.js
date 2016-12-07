@@ -1,29 +1,76 @@
 import hapi from 'hapi'
 
+const AuthBearer = require('hapi-auth-bearer-token')
+import fs from 'fs'
+// import { jsonwebtoken as jwt } from 'jsonwebtoken'
+const jwt = require('jsonwebtoken')
+const UserSchema = require('./model/user-schema')
+import { formatError } from 'apollo-errors'
+import path from 'path'
+
 import Mongoose from 'mongoose'
 
 import { graphqlHapi, graphiqlHapi } from 'graphql-server-hapi'
 import { makeExecutableSchema } from 'graphql-tools'
 
-// import Schema from './schema'
+import constants from './config/constants'
+
 const Schema = require('./schema')
-// import Resolvers from './resolvers'
 const Resolvers = require('./resolvers')
-// import Connectors from './connectors'
 const Connectors = require('./connectors')
 
 const connectURI = 'mongodb://localhost/pf-user'
 Mongoose.Promise = global.Promise
-Mongoose.connect(connectURI, err => {
-  if (err) { return err }
-  return true
+Mongoose.connect(constants.database['uri'], constants.database['options'])
+  .then()
+  .catch(err => {
+  console.error('err:', err)
+  //todo: log error here
 })
 
 
-// const server = new hapi.Server({debug: {request: ['info', 'error']}})
+// authenticate props
+// open this certificate file once then it's accessible for every request
+// see:https://gist.github.com/thebigredgeek/1b061644fd3e4f475574e71838bfd178
+// for authentication with Apollo server
+const SSLPATH = path.join(__dirname, '../ssl')
+const DOMAIN_KEY = constants.domainKey
+const tokenFN = DOMAIN_KEY + '-public.pem'
+const tokenPath = path.join(SSLPATH, tokenFN)
+const cert = fs.readFileSync(tokenPath)
+
+const User = Mongoose.model('User', UserSchema, 'users')
+let AuthUser
+
+const jwtValidateFunc = function(token, callback) {
+
+  jwt.verify(token, cert, { algorithms: ['RS256'], issuer: DOMAIN_KEY }, function(err, decoded) {
+    if (err) {
+      return callback(null, false, { token: token })
+    }
+    console.log('decoded:', decoded)
+    // fetch user scopes
+    let q = User.findById(decoded.jti, {active: 1, scope: 1})
+    q.exec().then(user => {
+      // If user is in-activated, forbid
+      if (user.active === false) {
+        return callback(null, false, { token: token })
+      }
+      console.log('user in jwtValidateFunc:', user)
+      AuthUser = user
+      let userID = user.id
+      return callback(null, true, { token: token, scope: user.scope, userID: userID })
+    })
+  })
+}
+
+
 const server = new hapi.Server()
-const HOST = 'localhost'
-const PORT = 3003
+server.connection({
+  host: constants.application['host'],
+  port: constants.application['port'],
+  routes: {cors: true}
+})
 
 const executableSchema = makeExecutableSchema({
   typeDefs: Schema,
@@ -37,20 +84,30 @@ const executableSchema = makeExecutableSchema({
   printErrors: true,
 })
 
-server.connection({
-  host: HOST,
-  port: PORT,
-  routes: {cors: true}
+server.register(AuthBearer, err => {
+  if (err) { throw err }
+
+  // server.auth.strategy('jwt_access_token', 'bearer-access-token', true, {
+  server.auth.strategy('jwt_access_token', 'bearer-access-token', 'try', {
+    validateFunc: jwtValidateFunc
+  })
 })
 
 server.register({
   register: graphqlHapi,
   options: {
     path: '/graphql',
-    graphqlOptions: {
+    graphqlOptions: (request) => {
+      return {
+        formatError,
+        schema: executableSchema,
+        context: { constructor: Connectors, auth: request.auth, user: AuthUser }
+      }
+    }
+    /*graphqlOptions: {
       schema: executableSchema,
-      context: { constructor: Connectors }
-    },
+      context: { constructor: Connectors, user: AuthUser }
+    },*/
   },
 })
 

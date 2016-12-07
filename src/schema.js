@@ -4,18 +4,31 @@ type Site {
   _id: String
   active: Boolean
   createdAt: String
-  credentialKeyPassword: String
-  credentialKeyUsername: String
-  collectionNm: String
+  credentials: SiteCredentials
+  collections: SiteCollections
   dbNm: String
-  domain: String
+  domainID: String
   name: String
-  pemFilePrivate: String
-  pemFilePublic: String
+  pemFiles: SitePemFiles
   resetURI: String
   roles: [SiteRole]
   signingMethod: String
   updatedAt: String
+}
+
+type SiteCredentials {
+  password: String
+  username: String
+}
+
+type SiteCollections {
+  contact: String
+  user: String
+}
+
+type SitePemFiles {
+  private: String
+  public: String
 }
 
 type SiteRole {
@@ -26,14 +39,12 @@ type SiteRole {
 input SiteInput {
   _id: ID
   active: Boolean
-  credentialKeyPassword: String!
-  credentialKeyUsername: String!
-  collectionNm: String!
+  credentials: CredentialsInput!
+  collections: CollectionsInput!
   dbNm: String!
-  domain: String!
+  domainID: String!
   name: String!
-  pemFilePrivate: String
-  pemFilePublic: String
+  pemFiles: PemFilesInput
   resetURI: String!
   roles: [RoleInput]
   signingMethod: String!
@@ -42,6 +53,21 @@ input SiteInput {
 input RoleInput {
   id: String!
   label: String!
+}
+
+input CredentialsInput {
+  password: String!
+  username: String!
+}
+
+input CollectionsInput {
+  contact: String!
+  user: String!
+}
+
+input PemFilesInput {
+  private: String
+  public: String
 }
 
 type UserContactName {
@@ -102,11 +128,63 @@ type RemoveResult {
   n: Int
 }
 
+input AuthInput {
+  email: String!
+  password: String!
+  domainID: String!
+}
+
+type AuthResult {
+  id: ID
+  contact: UserContactName
+  email: String
+  scope: [UserScope]
+  token: String
+}
+
+input AuthValidateInput {
+  domainID: ID
+  token: String
+}
+
+type AuthValidateResult {
+  exp: Int
+  iat: Int
+  iss: String
+  jti: String
+}
+
+input AuthResetPasswdInput {
+  domainID: ID
+  email: String
+}
+
+type AuthResetPasswdResult {
+  ok: Boolean
+  result: String
+}
+
+input AuthResetTokenInput {
+  domainID: ID
+  email: String
+  password: String
+  resetToken: String
+}
+
+type AuthResetTokenResult {
+  id: ID
+  contact: UserContactName
+  email: String
+  scope: [UserScope]
+  scopeBits: Int
+  token: String
+}
+
 type RootQuery {
 
   fetchSites(
     active: Boolean
-    domain: String
+    domainID: String
     name: String
   ): [Site]
 
@@ -144,6 +222,16 @@ type RootMutation {
   ): User
 
   removeUser(_id:ID!, domainID:ID!): RemoveResult
+
+  authUser(input:AuthInput): AuthResult
+
+  authLogoutUser(_id:ID): RemoveResult
+
+  authValidate(input:AuthValidateInput): AuthValidateResult
+
+  authResetPasswd (input:AuthResetPasswdInput): AuthResetPasswdResult
+
+  authResetToken (input:AuthResetTokenInput): AuthResetTokenResult
 
 }
 
