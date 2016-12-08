@@ -193,19 +193,17 @@ type RootQuery {
     roles: [RoleInput]
   ): Site
 
-  fetchUser(
-    domainID: ID
-    email: String
-  ): User
-
   fetchUsers(
     domainID: ID
   ): [User]
 
+  fetchUser(
+    domainID: ID
+    email: String
+  ): User
 }
 
 type RootMutation {
-
   createSite(input:SiteInput): Site
 
   updateSite(

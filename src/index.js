@@ -2,7 +2,6 @@ import hapi from 'hapi'
 
 const AuthBearer = require('hapi-auth-bearer-token')
 import fs from 'fs'
-// import { jsonwebtoken as jwt } from 'jsonwebtoken'
 const jwt = require('jsonwebtoken')
 const UserSchema = require('./model/user-schema')
 import { formatError } from 'apollo-errors'
@@ -14,10 +13,9 @@ import { graphqlHapi, graphiqlHapi } from 'graphql-server-hapi'
 import { makeExecutableSchema } from 'graphql-tools'
 
 import constants from './config/constants'
-
+import connectors from './connectors'
+import resolvers from './resolvers'
 const Schema = require('./schema')
-const Resolvers = require('./resolvers')
-const Connectors = require('./connectors')
 
 const connectURI = 'mongodb://localhost/pf-user'
 Mongoose.Promise = global.Promise
@@ -40,7 +38,7 @@ const tokenPath = path.join(SSLPATH, tokenFN)
 const cert = fs.readFileSync(tokenPath)
 
 const User = Mongoose.model('User', UserSchema, 'users')
-let AuthUser
+// let AuthUser
 
 const jwtValidateFunc = function(token, callback) {
 
@@ -48,8 +46,10 @@ const jwtValidateFunc = function(token, callback) {
     if (err) {
       return callback(null, false, { token: token })
     }
-    console.log('decoded:', decoded)
-    // fetch user scopes
+    // console.log('decoded:', decoded)
+    return callback(null, true, { token: token, userID: decoded.jti })
+
+    /*// fetch user scopes
     let q = User.findById(decoded.jti, {active: 1, scope: 1})
     q.exec().then(user => {
       // If user is in-activated, forbid
@@ -57,10 +57,10 @@ const jwtValidateFunc = function(token, callback) {
         return callback(null, false, { token: token })
       }
       console.log('user in jwtValidateFunc:', user)
-      AuthUser = user
+      // AuthUser = user
       let userID = user.id
       return callback(null, true, { token: token, scope: user.scope, userID: userID })
-    })
+    })*/
   })
 }
 
@@ -74,7 +74,7 @@ server.connection({
 
 const executableSchema = makeExecutableSchema({
   typeDefs: Schema,
-  resolvers: Resolvers,
+  resolvers: resolvers,
   resolverValidationOptions: {
     // requireResolversForAllFields: false,
     // requireResolversForArgs: false,
@@ -101,13 +101,9 @@ server.register({
       return {
         formatError,
         schema: executableSchema,
-        context: { constructor: Connectors, auth: request.auth, user: AuthUser }
+        context: { constructor: connectors, auth: request.auth }
       }
     }
-    /*graphqlOptions: {
-      schema: executableSchema,
-      context: { constructor: Connectors, user: AuthUser }
-    },*/
   },
 })
 

@@ -17,7 +17,7 @@
     "apollo-server": "0.3.3",
     "bcrypt": "0.8.7",
     "fs": "0.0.1-security",
-    "graphql": "0.7.2",
+    "graphql": "0.8.2",
     "graphql-server-hapi": "0.4.3",
     "graphql-tools": "0.7.2",
     "hapi": "15.1.1",
