@@ -27,27 +27,38 @@ const UserSchema = Mongoose.Schema({
 
 UserSchema.pre('save', function(next) {
   let user = this
+  console.log('save in userschema:', user)
   if (!user.isModified('password')) return next()
+    console.log('save in userschema 2:', user)
 
   /*if (user.scope) {
     user.scopeBits = setBits(user.scope)
   }*/
 
-  bcrypt.genSalt(10, (err, salt) => {
+  bcrypt.genSalt(SALT_FACTOR, (err, salt) => {
     if (err) return next(err)
 
     bcrypt.hash(user.password, salt, (err, hash) => {
       if (err) return next(err)
       user.password = hash
-      // console.log('hash', hash)
       next()
     })
   })
 })
 
+UserSchema.static('hashPassword', function(password) {
+  if (!password || !password.length > 0) {
+    return null
+  }
+  const salt = bcrypt.genSaltSync(SALT_FACTOR)
+  return bcrypt.hashSync(password, salt)
+})
+
 UserSchema.method('hashPassword', function () {
-  if (this.password !== undefined) {
-    this.password = bcrypt.hashSync(this.password, SALT_FACTOR)
+  console.log('password to hash:', this.password)
+  if (this.password && this.password.length > 0) {
+    const salt = bcrypt.genSaltSync(SALT_FACTOR)
+    this.password = bcrypt.hashSync(this.password, salt)
   }
 })
 

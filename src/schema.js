@@ -13,6 +13,7 @@ type Site {
   resetURI: String
   roles: [SiteRole]
   signingMethod: String
+  TTL: Int
   updatedAt: String
 }
 
@@ -48,6 +49,7 @@ input SiteInput {
   resetURI: String!
   roles: [RoleInput]
   signingMethod: String!
+  TTL: Int
 }
 
 input RoleInput {

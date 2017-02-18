@@ -13,7 +13,7 @@ export const isAuthenticatedResolver = baseResolver.createResolver(
 
 export const isNotAuthenticatedResolver = baseResolver.createResolver(
   (root, args, context) => {
-    console.log('context.auth in isNotAuth:', context.auth)
+    // console.log('context.auth in isNotAuth:', context.auth)
     // console.log('context in isNotAuthenticatedResolver:', context.auth)
     if (context.auth.isAuthenticated) throw new AlreadyAuthenticatedError()
     // if (context.user && context.user.id) throw new AlreadyAuthenticatedError();

@@ -1,3 +1,4 @@
+const SiteModel = require('../model/site')
 const UserSchema = require('../model/user-schema')
 import { userModel, contactModel } from './lib/utils'
 
@@ -8,10 +9,13 @@ export default class User {
       const { siteDoc, user } = fields
       const um = userModel(siteDoc.dbNm, siteDoc.collections.user)
       const ct = contactModel(siteDoc.dbNm, siteDoc.collections.contact)
+      // _id is populated upstream in reducer and needs to be removed
+      // in order to create actual record id
+      delete user.contact._id
       let contact = new ct(user.contact)
       contact.email = user.email
-      return contact.save().then(contact => {
-        user.contact = contact._id
+      return contact.save().then(cont => {
+        user.contact = cont._id
         return new um(user).save()
       })
     }
@@ -22,6 +26,12 @@ export default class User {
       const ct = contactModel(siteDoc.dbNm, siteDoc.collections.contact)
       const contact = user.contact
       delete user.contact
+
+      if (user.password && user.password.length > 0) {
+        user.password = um.hashPassword(user.password)
+      } else {
+        delete user.password
+      }
       return um.findByIdAndUpdate(user._id, user, {new: true}).exec().then(userRes => {
         return ct.findByIdAndUpdate(contact._id, contact, {new: true}).exec().then(contact => {
           userRes.contact = contact

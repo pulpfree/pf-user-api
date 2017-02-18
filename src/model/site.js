@@ -52,7 +52,8 @@ const siteSchema = Mongoose.Schema({
   signingMethod: {
     default: 'RSA',
     type:     String,
-  }
+  },
+  TTL: Number
 },{
   timestamps: true
 })

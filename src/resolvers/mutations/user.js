@@ -24,8 +24,6 @@ export const removeUser = isAuthenticatedResolver.createResolver(
   async (_, { _id, domainID }, ctx) => {
     const usr = new ctx.constructor.User()
     let ret = await usr.remove(_id, domainID)
-    return ret.then(res => {
-      return res.result
-    })
+    return ret.result
   }
 )

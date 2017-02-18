@@ -205,7 +205,6 @@ mutation authResetToken($fields: AuthResetTokenInput) {
 }
 {
   "fields": {
-    "email": "rond@webbtech.net",
     "domainID": "local.pf-user",
     "password": "my-new-passwd",
     "resetToken": "<token>"
