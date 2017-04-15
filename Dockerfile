@@ -7,10 +7,8 @@ RUN apk update && \
   && mkdir app
 
 COPY package.json /app/package.json
-COPY src /app/src/
+COPY dist /app/dist/
 COPY ssl /app/ssl/
-# COPY cli /app/cli
-# COPY index.js /app/
 
 WORKDIR /app
 RUN npm i --production
@@ -18,4 +16,4 @@ RUN npm i --production
 
 # match config port
 EXPOSE 3010
-CMD ["node", "index.js"]
+CMD ["node", "dist/index.js"]
