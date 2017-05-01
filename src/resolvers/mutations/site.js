@@ -18,8 +18,6 @@ export const removeSite = isAuthenticatedResolver.createResolver(
   async (_, { _id }, ctx) => {
     const site = new ctx.constructor.Site()
     let ret = await site.remove(_id)
-    return ret.then(res => {
-      return res.result
-    })
+    return ret.result
   }
 )

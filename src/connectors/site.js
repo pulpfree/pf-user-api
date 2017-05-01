@@ -14,7 +14,7 @@ export default class Site {
       return SiteModel.find(params).sort({name: 1}).exec()
     }
 
-    this.findSiteById = (_id) => {
+    this.findSite = (_id) => {
       const site = SiteModel.findById(_id, (error, data) => {
         return data
       })

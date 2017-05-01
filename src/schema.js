@@ -1,5 +1,63 @@
 const typeDefinitions = `
 
+
+# Auth ==================================
+
+input AuthInput {
+  email: String!
+  password: String!
+  domainID: String!
+}
+
+type AuthResult {
+  id: ID
+  contact: UserContactName
+  email: String
+  scope: [UserScope]
+  token: String
+}
+
+input AuthValidateInput {
+  domainID: ID
+  token: String
+}
+
+type AuthValidateResult {
+  exp: Int
+  iat: Int
+  iss: String
+  jti: String
+}
+
+input AuthResetPasswdInput {
+  domainID: ID
+  email: String
+}
+
+type AuthResetPasswdResult {
+  ok: Boolean
+  result: String
+}
+
+input AuthResetTokenInput {
+  domainID: ID
+  email: String
+  password: String
+  resetToken: String
+}
+
+type AuthResetTokenResult {
+  id: ID
+  contact: UserContactName
+  email: String
+  scope: [UserScope]
+  scopeBits: Int
+  token: String
+}
+
+
+# Site ==================================
+
 type Site {
   _id: String
   active: Boolean
@@ -72,6 +130,9 @@ input PemFilesInput {
   public: String
 }
 
+
+# User ==================================
+
 type UserContactName {
   first: String
   last: String
@@ -130,57 +191,8 @@ type RemoveResult {
   n: Int
 }
 
-input AuthInput {
-  email: String!
-  password: String!
-  domainID: String!
-}
 
-type AuthResult {
-  id: ID
-  contact: UserContactName
-  email: String
-  scope: [UserScope]
-  token: String
-}
-
-input AuthValidateInput {
-  domainID: ID
-  token: String
-}
-
-type AuthValidateResult {
-  exp: Int
-  iat: Int
-  iss: String
-  jti: String
-}
-
-input AuthResetPasswdInput {
-  domainID: ID
-  email: String
-}
-
-type AuthResetPasswdResult {
-  ok: Boolean
-  result: String
-}
-
-input AuthResetTokenInput {
-  domainID: ID
-  email: String
-  password: String
-  resetToken: String
-}
-
-type AuthResetTokenResult {
-  id: ID
-  contact: UserContactName
-  email: String
-  scope: [UserScope]
-  scopeBits: Int
-  token: String
-}
+# Queries ===============================
 
 type RootQuery {
 
@@ -190,7 +202,7 @@ type RootQuery {
     name: String
   ): [Site]
 
-  fetchSiteById(
+  fetchSite(
     _id: ID
     roles: [RoleInput]
   ): Site
@@ -204,6 +216,9 @@ type RootQuery {
     email: String
   ): User
 }
+
+
+# Mutations =============================
 
 type RootMutation {
   createSite(input:SiteInput): Site

@@ -8,10 +8,10 @@ export const fetchSites = isAuthenticatedResolver.createResolver(
   }
 )
 
-export const fetchSiteById = isAuthenticatedResolver.createResolver(
+export const fetchSite = isAuthenticatedResolver.createResolver(
   async (_, { _id }, ctx) => {
     if (!_id) return {}
     const site = new ctx.constructor.Site()
-    return await site.findSiteById(_id)
+    return await site.findSite(_id)
   }
 )
